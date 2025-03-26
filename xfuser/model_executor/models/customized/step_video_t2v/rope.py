@@ -1,6 +1,6 @@
 import torch
 from xfuser.core.distributed.parallel_state import get_sequence_parallel_world_size, get_sequence_parallel_rank
-from xfuser.model_executor.models.customized.step_video_t2v.attentions import timing_decorator
+from xfuser.model_executor.models.customized.step_video_t2v.attentions import timing_decorator, time
 
 
 class RoPE1D:
@@ -10,6 +10,7 @@ class RoPE1D:
         self.scaling_factor = scaling_factor
         self.cache = {}
 
+    @timing_decorator
     def get_cos_sin(self, D, seq_len, device, dtype):
         if (D, seq_len, device, dtype) not in self.cache:
             inv_freq = 1.0 / (self.base ** (torch.arange(0, D, 2).float().to(device) / D))
@@ -26,7 +27,6 @@ class RoPE1D:
         x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2:]
         return torch.cat((-x2, x1), dim=-1)
 
-    @timing_decorator
     def apply_rope1d(self, tokens, pos1d, cos, sin):
         assert pos1d.ndim == 2
         cos = torch.nn.functional.embedding(pos1d, cos)[:, :, None, :]
