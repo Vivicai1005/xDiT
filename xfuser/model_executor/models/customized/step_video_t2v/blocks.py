@@ -15,27 +15,9 @@ import torch.nn as nn
 from typing import Optional
 from einops import rearrange
 
-from xfuser.model_executor.models.customized.step_video_t2v.attentions import Attention
+from xfuser.model_executor.models.customized.step_video_t2v.attentions import Attention, timing_decorator
 from xfuser.model_executor.models.customized.step_video_t2v.normalization import RMSNorm
 from xfuser.model_executor.models.customized.step_video_t2v.rope import RoPE3D
-
-import time
-
-def timing_decorator(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        if args and hasattr(args[0], '__class__'):
-            class_name = args[0].__class__.__name__
-            print(f"{class_name}.{func.__name__} took {elapsed_time:.3f} seconds")
-        else:
-            print(f"{func.__name__} took {elapsed_time:.3f} seconds")
-        return result
-    return wrapper
-
-
 
 class SelfAttention(Attention):
     def __init__(self, hidden_dim, head_dim, bias=False, with_rope=True, with_qk_norm=True, attn_type='torch'):
