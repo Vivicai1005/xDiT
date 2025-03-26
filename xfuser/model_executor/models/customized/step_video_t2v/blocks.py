@@ -103,7 +103,6 @@ class CrossAttention(Attention):
 
         self.core_attention = self.attn_processor(attn_type=attn_type)
 
-    @timing_decorator
     def forward(
             self,
             x: torch.Tensor,

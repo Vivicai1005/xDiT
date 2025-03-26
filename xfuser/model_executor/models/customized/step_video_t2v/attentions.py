@@ -62,6 +62,7 @@ class Attention(nn.Module):
         x = rearrange(x, 'b h s d -> b s h d')
         return x
 
+    @timing_decorator
     def parallel_attn_func(
             self,
             q,
