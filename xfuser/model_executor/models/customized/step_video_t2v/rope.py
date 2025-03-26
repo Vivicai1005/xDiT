@@ -1,7 +1,5 @@
 import torch
 from xfuser.core.distributed.parallel_state import get_sequence_parallel_world_size, get_sequence_parallel_rank
-from xfuser.model_executor.models.customized.step_video_t2v.attentions import timing_decorator
-
 
 class RoPE1D:
     def __init__(self, freq=1e4, F0=1.0, scaling_factor=1.0):
@@ -26,7 +24,6 @@ class RoPE1D:
         x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2:]
         return torch.cat((-x2, x1), dim=-1)
 
-    @timing_decorator
     def apply_rope1d(self, tokens, pos1d, cos, sin):
         assert pos1d.ndim == 2
         cos = torch.nn.functional.embedding(pos1d, cos)[:, :, None, :]

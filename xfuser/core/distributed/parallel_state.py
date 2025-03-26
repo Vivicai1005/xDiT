@@ -15,7 +15,6 @@ from .group_coordinator import (
     SequenceParallelGroupCoordinator,
 )
 from .utils import RankGenerator
-from xfuser.model_executor.models.customized.step_video_t2v.attentions import timing_decorator
 
 env_info = envs.PACKAGES_CHECKER.get_packages_info()
 HAS_LONG_CTX_ATTN = env_info["has_long_ctx_attn"]
@@ -61,12 +60,12 @@ def get_sp_group() -> SequenceParallelGroupCoordinator:
     assert _SP is not None, "pipeline model parallel group is not initialized"
     return _SP
 
-@timing_decorator
+
 def get_sequence_parallel_world_size():
     """Return world size for the sequence parallel group."""
     return get_sp_group().world_size
 
-@timing_decorator
+
 def get_sequence_parallel_rank():
     """Return my rank for the sequence parallel group."""
     return get_sp_group().rank_in_group
