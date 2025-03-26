@@ -19,6 +19,19 @@ from xfuser.model_executor.models.customized.step_video_t2v.attentions import At
 from xfuser.model_executor.models.customized.step_video_t2v.normalization import RMSNorm
 from xfuser.model_executor.models.customized.step_video_t2v.rope import RoPE3D
 
+import time
+
+def timing_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"{func.__name__} took {elapsed_time:.3f} seconds")
+        return result
+    return wrapper
+
+
 
 class SelfAttention(Attention):
     def __init__(self, hidden_dim, head_dim, bias=False, with_rope=True, with_qk_norm=True, attn_type='torch'):
@@ -47,6 +60,7 @@ class SelfAttention(Attention):
         x = self.rope_3d(x, fhw_positions, rope_ch_split, parallel)
         return x
 
+    @timing_decorator
     def forward(
             self,
             x,
@@ -103,6 +117,7 @@ class CrossAttention(Attention):
 
         self.core_attention = self.attn_processor(attn_type=attn_type)
 
+    @timing_decorator
     def forward(
             self,
             x: torch.Tensor,
@@ -177,6 +192,7 @@ class FeedForward(nn.Module):
             nn.Linear(inner_dim, dim_out, bias=bias)
         ])
 
+    @timing_decorator
     def forward(self, hidden_states: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         for module in self.net:
             hidden_states = module(hidden_states)
@@ -187,7 +203,7 @@ def modulate(x, scale, shift):
     x = x * (1 + scale) + shift
     return x
 
-
+@timing_decorator
 def gate(x, gate):
     x = gate * x
     return x
@@ -251,6 +267,7 @@ class StepVideoTransformerBlock(nn.Module):
         self.scale_shift_table = nn.Parameter(torch.randn(6, dim) / dim ** 0.5)
 
     @torch.no_grad()
+    @timing_decorator
     def forward(
             self,
             q: torch.Tensor,
