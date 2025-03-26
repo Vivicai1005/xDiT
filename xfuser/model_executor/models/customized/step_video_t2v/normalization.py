@@ -2,6 +2,7 @@ from typing import Dict, Optional, Tuple
 import torch
 import torch.nn as nn
 import math
+from xfuser.model_executor.models.customized.step_video_t2v.attentions import timing_decorator
 
 
 class RMSNorm(nn.Module):
@@ -44,6 +45,7 @@ class RMSNorm(nn.Module):
         """
         return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
 
+    @timing_decorator
     def forward(self, x):
         """
         Forward pass through the RMSNorm layer.
