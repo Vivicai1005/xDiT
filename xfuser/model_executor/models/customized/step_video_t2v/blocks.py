@@ -27,7 +27,11 @@ def timing_decorator(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"{func.__name__} took {elapsed_time:.3f} seconds")
+        if args and hasattr(args[0], '__class__'):
+            class_name = args[0].__class__.__name__
+            print(f"{class_name}.{func.__name__} took {elapsed_time:.3f} seconds")
+        else:
+            print(f"{func.__name__} took {elapsed_time:.3f} seconds")
         return result
     return wrapper
 
@@ -192,7 +196,6 @@ class FeedForward(nn.Module):
             nn.Linear(inner_dim, dim_out, bias=bias)
         ])
 
-    @timing_decorator
     def forward(self, hidden_states: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         for module in self.net:
             hidden_states = module(hidden_states)
@@ -203,7 +206,7 @@ def modulate(x, scale, shift):
     x = x * (1 + scale) + shift
     return x
 
-@timing_decorator
+
 def gate(x, gate):
     x = gate * x
     return x
