@@ -36,7 +36,6 @@ class Attention(nn.Module):
         else:
             raise Exception('Not supported attention type...')
 
-    @timing_decorator
     def torch_attn_func(
             self,
             q,

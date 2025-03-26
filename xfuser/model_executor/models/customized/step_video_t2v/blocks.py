@@ -15,7 +15,7 @@ import torch.nn as nn
 from typing import Optional
 from einops import rearrange
 
-from xfuser.model_executor.models.customized.step_video_t2v.attentions import Attention, timing_decorator
+from xfuser.model_executor.models.customized.step_video_t2v.attentions import Attention, timing_decorator, time
 from xfuser.model_executor.models.customized.step_video_t2v.normalization import RMSNorm
 from xfuser.model_executor.models.customized.step_video_t2v.rope import RoPE3D
 
@@ -42,7 +42,6 @@ class SelfAttention(Attention):
         self.core_attention = self.attn_processor(attn_type=attn_type)
         self.parallel = attn_type == 'parallel'
 
-    @timing_decorator
     def apply_rope3d(self, x, fhw_positions, rope_ch_split, parallel=True):
         x = self.rope_3d(x, fhw_positions, rope_ch_split, parallel)
         return x
@@ -56,6 +55,7 @@ class SelfAttention(Attention):
             rope_positions=None,
             attn_mask=None
     ):
+        t0 = time.time()
         xqkv = self.wqkv(x)
         xqkv = xqkv.view(
             *x.shape[:-1],
@@ -63,15 +63,18 @@ class SelfAttention(Attention):
             3 * self.head_dim
         )
         xq, xk, xv = torch.split(xqkv, [self.head_dim] * 3, dim=-1)  ## seq_len, n, dim
-
+        t1 = time.time()
+        print(f"t0-t1: {t1-t0}")
         if self.with_qk_norm:
             xq = self.q_norm(xq)
             xk = self.k_norm(xk)
-
+        t2 = time.time()
+        print(f"t1-t2: {t2-t1}")
         if self.with_rope:
             xq = self.apply_rope3d(xq, rope_positions, self.rope_ch_split, parallel=self.parallel)
             xk = self.apply_rope3d(xk, rope_positions, self.rope_ch_split, parallel=self.parallel)
-
+        t3 = time.time()
+        print(f"t2-t3: {t3-t2}")
         output = self.core_attention(
             xq,
             xk,
@@ -80,9 +83,12 @@ class SelfAttention(Attention):
             max_seqlen=max_seqlen,
             attn_mask=attn_mask
         )
+        t4 = time.time()
+        print(f"t3-t4: {t4-t3}")
         output = rearrange(output, 'b s h d -> b s (h d)')
         output = self.wo(output)
-
+        t5 = time.time()
+        print(f"t4-t5: {t5-t4}")
         return output
 
 
