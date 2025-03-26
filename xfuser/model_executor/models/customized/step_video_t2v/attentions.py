@@ -5,6 +5,10 @@ from einops import rearrange
 import time
 
 def timing_decorator(func):
+    if torch.cuda.is_available():
+        torch_device = torch.cuda.get_device_name(torch.cuda.current_device())
+    else:
+        torch_device = 'cpu'
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)
@@ -12,9 +16,9 @@ def timing_decorator(func):
         elapsed_time = end_time - start_time
         if args and hasattr(args[0], '__class__'):
             class_name = args[0].__class__.__name__
-            print(f"{class_name}.{func.__name__} took {elapsed_time:.3f} seconds")
+            print(f"Torch Device: {torch_device} | {class_name}.{func.__name__} took {elapsed_time:.3f} seconds")
         else:
-            print(f"{func.__name__} took {elapsed_time:.3f} seconds")
+            print(f"Torch Device: {torch_device} | {func.__name__} took {elapsed_time:.3f} seconds")
         return result
     return wrapper
 
@@ -36,6 +40,7 @@ class Attention(nn.Module):
         else:
             raise Exception('Not supported attention type...')
 
+    @timing_decorator
     def torch_attn_func(
             self,
             q,
