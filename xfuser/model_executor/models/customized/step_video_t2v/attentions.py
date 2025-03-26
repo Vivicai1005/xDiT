@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
+from xfuser.model_executor.models.customized.step_video_t2v.blocks import timing_decorator
+
 try:
     from xfuser.core.long_ctx_attention import xFuserLongContextAttention
 except ImportError:
@@ -20,6 +22,7 @@ class Attention(nn.Module):
         else:
             raise Exception('Not supported attention type...')
 
+    @timing_decorator
     def torch_attn_func(
             self,
             q,
