@@ -246,6 +246,7 @@ class StepVideoTransformerBlock(nn.Module):
         self.scale_shift_table = nn.Parameter(torch.randn(6, dim) / dim ** 0.5)
 
     @torch.no_grad()
+    @timing_decorator
     def forward(
             self,
             q: torch.Tensor,
