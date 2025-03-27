@@ -42,12 +42,10 @@ class SelfAttention(Attention):
         self.core_attention = self.attn_processor(attn_type=attn_type)
         self.parallel = attn_type == 'parallel'
 
-    @timing_decorator
     def apply_rope3d(self, x, fhw_positions, rope_ch_split, parallel=True):
         x = self.rope_3d(x, fhw_positions, rope_ch_split, parallel)
         return x
 
-    @timing_decorator
     def forward(
             self,
             x,
@@ -100,7 +98,6 @@ class CrossAttention(Attention):
 
         self.core_attention = self.attn_processor(attn_type=attn_type)
 
-    @timing_decorator
     def forward(
             self,
             x: torch.Tensor,
