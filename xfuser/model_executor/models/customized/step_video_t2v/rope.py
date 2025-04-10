@@ -26,7 +26,6 @@ class RoPE1D:
         x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2:]
         return torch.cat((-x2, x1), dim=-1)
 
-    @func_timer_decorator
     def apply_rope1d(self, tokens, pos1d, cos, sin):
         assert pos1d.ndim == 2
         cos = torch.nn.functional.embedding(pos1d, cos)[:, :, None, :]
@@ -54,7 +53,6 @@ class RoPE3D(RoPE1D):
         super(RoPE3D, self).__init__(freq, F0, scaling_factor)
         self.position_cache = {}
 
-    @func_timer_decorator
     def get_mesh_3d(self, rope_positions, bsz):
         f, h, w = rope_positions
 
