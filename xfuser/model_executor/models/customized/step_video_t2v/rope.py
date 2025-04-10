@@ -1,6 +1,6 @@
 import torch
 from xfuser.core.distributed.parallel_state import get_sequence_parallel_world_size, get_sequence_parallel_rank
-from xfuser.core.utils.timer import func_timer_decorator
+from xfuser.core.utils.timer import func_timer_decorator, time
 
 
 class RoPE1D:
@@ -26,7 +26,6 @@ class RoPE1D:
         x1, x2 = x[..., : x.shape[-1] // 2], x[..., x.shape[-1] // 2:]
         return torch.cat((-x2, x1), dim=-1)
 
-    @func_timer_decorator
     def apply_rope1d(self, tokens, pos1d, cos, sin):
         assert pos1d.ndim == 2
         cos = torch.nn.functional.embedding(pos1d, cos)[:, :, None, :]
@@ -53,8 +52,7 @@ class RoPE3D(RoPE1D):
     def __init__(self, freq=1e4, F0=1.0, scaling_factor=1.0):
         super(RoPE3D, self).__init__(freq, F0, scaling_factor)
         self.position_cache = {}
-        
-    @func_timer_decorator
+
     def get_mesh_3d(self, rope_positions, bsz):
         f, h, w = rope_positions
 
@@ -78,13 +76,15 @@ class RoPE3D(RoPE1D):
         mesh_grid = self.get_mesh_3d(rope_positions, bsz=tokens.shape[0])
         out = []
         for i, (D, x) in enumerate(zip(ch_split, torch.split(tokens, ch_split, dim=-1))):
-            #print(f"i: {i}, D: {D}, x: {x.shape}, device: {tokens.device}, type: {tokens.dtype}")
+            print(f"i: {i}, D: {D}, x: {x.shape}, device: {tokens.device}, type: {tokens.dtype}")
             cos, sin = self.get_cos_sin(D, int(mesh_grid.max()) + 1, tokens.device, tokens.dtype)
-            
+
+            t0 = time.time()
             if parallel:
                 mesh = torch.chunk(mesh_grid[:, :, i], get_sequence_parallel_world_size(),dim=1)[get_sequence_parallel_rank()].clone()
             else:
                 mesh = mesh_grid[:, :, i].clone()
+            print(f"{time.time() - t0:.3f} seconds")
             x = self.apply_rope1d(x, mesh.to(tokens.device), cos, sin)
             out.append(x)
             
