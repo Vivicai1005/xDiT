@@ -76,7 +76,7 @@ class RoPE3D(RoPE1D):
         mesh_grid = self.get_mesh_3d(rope_positions, bsz=tokens.shape[0])
         out = []
         for i, (D, x) in enumerate(zip(ch_split, torch.split(tokens, ch_split, dim=-1))):
-            print(f"i: {i}, D: {D}, x: {x.shape}, device: {tokens.device}, type: {tokens.dtype}")
+            #print(f"i: {i}, D: {D}, x: {x.shape}, device: {tokens.device}, type: {tokens.dtype}")
             cos, sin = self.get_cos_sin(D, int(mesh_grid.max()) + 1, tokens.device, tokens.dtype)
             
             if parallel:
