@@ -79,12 +79,11 @@ class RoPE3D(RoPE1D):
             print(f"i: {i}, D: {D}, x: {x.shape}, device: {tokens.device}, type: {tokens.dtype}")
             cos, sin = self.get_cos_sin(D, int(mesh_grid.max()) + 1, tokens.device, tokens.dtype)
 
-            t0 = time.time()
             if parallel:
                 mesh = torch.chunk(mesh_grid[:, :, i], get_sequence_parallel_world_size(),dim=1)[get_sequence_parallel_rank()].clone()
             else:
                 mesh = mesh_grid[:, :, i].clone()
-            print(f"{time.time() - t0:.3f} seconds")
+
             x = self.apply_rope1d(x, mesh.to(tokens.device), cos, sin)
             out.append(x)
             

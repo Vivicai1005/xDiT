@@ -26,6 +26,12 @@ def func_timer_decorator(func):
         elapsed_time = end_time - start_time
         if args and hasattr(args[0], '__class__'):
             class_name = args[0].__class__.__name__
+            if func.__name__ == "get_cos_sin":
+                sig = inspect.signature(func)
+                bound_arguments = sig.bind(*args, **kwargs)
+                bound_arguments.apply_defaults()
+                args_str = ", ".join(f"{name}={value!r}" for name, value in bound_arguments.arguments.items())
+                print(f"Calling {func.__name__}({args_str})")
             print(f"{class_name}.{func.__name__} took {elapsed_time:.3f} seconds")
         else:
             print(f"{func.__name__} took {elapsed_time:.3f} seconds")
