@@ -15,7 +15,8 @@ import torch.nn as nn
 from typing import Optional
 from einops import rearrange
 
-from xfuser.model_executor.models.customized.step_video_t2v.attentions import Attention, timing_decorator, time
+from xfuser.core.utils.timer import func_timer_decorator
+from xfuser.model_executor.models.customized.step_video_t2v.attentions import Attention
 from xfuser.model_executor.models.customized.step_video_t2v.normalization import RMSNorm
 from xfuser.model_executor.models.customized.step_video_t2v.rope import RoPE3D
 
@@ -46,6 +47,7 @@ class SelfAttention(Attention):
         x = self.rope_3d(x, fhw_positions, rope_ch_split, parallel)
         return x
 
+    @func_timer_decorator
     def forward(
             self,
             x,
@@ -98,6 +100,7 @@ class CrossAttention(Attention):
 
         self.core_attention = self.attn_processor(attn_type=attn_type)
 
+    @func_timer_decorator
     def forward(
             self,
             x: torch.Tensor,
@@ -246,7 +249,7 @@ class StepVideoTransformerBlock(nn.Module):
         self.scale_shift_table = nn.Parameter(torch.randn(6, dim) / dim ** 0.5)
 
     @torch.no_grad()
-    @timing_decorator
+    @func_timer_decorator
     def forward(
             self,
             q: torch.Tensor,
