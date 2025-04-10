@@ -1,6 +1,5 @@
 import torch
 from xfuser.core.distributed.parallel_state import get_sequence_parallel_world_size, get_sequence_parallel_rank
-from xfuser.model_executor.models.customized.step_video_t2v.attentions import timing_decorator, time
 
 
 class RoPE1D:
