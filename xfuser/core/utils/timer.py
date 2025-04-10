@@ -1,5 +1,6 @@
 import torch
 import time
+import inspect
 
 
 def gpu_timer_decorator(func):
