@@ -45,7 +45,7 @@ class SelfAttention(Attention):
 
     @func_timer_decorator
     def apply_rope3d(self, x, fhw_positions, rope_ch_split, parallel=True):
-        print(f"device: {x.device}, shape: {x.shape}")
+        print(f"device: {x.device}, shape: {x.shape}, parallel: {parallel}")
         x = self.rope_3d(x, fhw_positions, rope_ch_split, parallel)
         return x
 
