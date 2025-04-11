@@ -9,7 +9,7 @@ class RoPE1D:
         self.F0 = F0
         self.scaling_factor = scaling_factor
         self.cache = {}
-    @func_timer_decorator
+
     def get_cos_sin(self, D, seq_len, device, dtype):
         if (D, seq_len, device, dtype) not in self.cache:
             inv_freq = 1.0 / (self.base ** (torch.arange(0, D, 2).float().to(device) / D))
@@ -74,7 +74,7 @@ class RoPE3D(RoPE1D):
             * tokens after appplying RoPE2D (batch_size x ntokens x nheads x dim)
         """
         assert sum(ch_split) == tokens.size(-1); 
-
+        print(f"rope_positions: {rope_positions}")
         mesh_grid = self.get_mesh_3d(rope_positions, bsz=tokens.shape[0])
         out = []
         for i, (D, x) in enumerate(zip(ch_split, torch.split(tokens, ch_split, dim=-1))):
