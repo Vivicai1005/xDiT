@@ -32,6 +32,7 @@ class RoPE1D:
         sin = torch.nn.functional.embedding(pos1d, sin)[:, :, None, :]
         return (tokens * cos) + (self.rotate_half(tokens) * sin)
 
+    @func_timer_decorator
     def __call__(self, tokens, positions):
         """
         input:
@@ -62,7 +63,8 @@ class RoPE3D(RoPE1D):
             z = torch.arange(w, device='cpu')
             self.position_cache[f"{f}-{h}-{w}"] = torch.cartesian_prod(x, y, z).view(1, f*h*w, 3).expand(bsz, -1, 3)
         return self.position_cache[f"{f}-{h}-{w}"]
-     
+
+
     def __call__(self, tokens, rope_positions, ch_split, parallel=False):
         """
         input:
